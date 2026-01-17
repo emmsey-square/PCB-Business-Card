@@ -1,0 +1,359 @@
+
+main.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .init:
+
+00000000 <InterruptVector>:
+   0:	0d20006f          	j	d2 <handle_reset>
+   4:	00000000          	.word	0x00000000
+   8:	00000140          	.word	0x00000140
+   c:	0000013e          	.word	0x0000013e
+	...
+  30:	0000013e          	.word	0x0000013e
+  34:	00000000          	.word	0x00000000
+  38:	0000013e          	.word	0x0000013e
+  3c:	00000000          	.word	0x00000000
+  40:	0000013e          	.word	0x0000013e
+  44:	0000013e          	.word	0x0000013e
+  48:	0000013e          	.word	0x0000013e
+  4c:	0000013e          	.word	0x0000013e
+  50:	0000013e          	.word	0x0000013e
+  54:	0000013e          	.word	0x0000013e
+  58:	0000013e          	.word	0x0000013e
+  5c:	0000013e          	.word	0x0000013e
+  60:	0000013e          	.word	0x0000013e
+  64:	0000013e          	.word	0x0000013e
+  68:	0000013e          	.word	0x0000013e
+  6c:	0000013e          	.word	0x0000013e
+  70:	0000013e          	.word	0x0000013e
+  74:	0000013e          	.word	0x0000013e
+  78:	0000013e          	.word	0x0000013e
+  7c:	0000013e          	.word	0x0000013e
+  80:	0000013e          	.word	0x0000013e
+  84:	0000013e          	.word	0x0000013e
+  88:	0000013e          	.word	0x0000013e
+  8c:	0000013e          	.word	0x0000013e
+  90:	0000013e          	.word	0x0000013e
+  94:	0000013e          	.word	0x0000013e
+  98:	0000013e          	.word	0x0000013e
+  9c:	0000                	.insn	2, 0x
+	...
+
+Disassembly of section .text:
+
+000000a0 <clearLeds>:
+
+void clearLeds(void)
+{
+	for (uint8_t i = 0; i < 8; i++)
+	{
+		funDigitalWrite(ledStrip[i], FUN_HIGH);
+  a0:	40011637          	lui	a2,0x40011
+{
+  a4:	4681                	li	a3,0
+		funDigitalWrite(ledStrip[i], FUN_HIGH);
+  a6:	c1018593          	addi	a1,gp,-1008 # 2000000c <ledStrip>
+  aa:	80060613          	addi	a2,a2,-2048 # 40010800 <_eusrstack+0x20010000>
+  ae:	4305                	li	t1,1
+	for (uint8_t i = 0; i < 8; i++)
+  b0:	4521                	li	a0,8
+		funDigitalWrite(ledStrip[i], FUN_HIGH);
+  b2:	00b687b3          	add	a5,a3,a1
+  b6:	0007c783          	lbu	a5,0(a5)
+	for (uint8_t i = 0; i < 8; i++)
+  ba:	0685                	addi	a3,a3,1
+		funDigitalWrite(ledStrip[i], FUN_HIGH);
+  bc:	0047d713          	srli	a4,a5,0x4
+  c0:	072a                	slli	a4,a4,0xa
+  c2:	8bbd                	andi	a5,a5,15
+  c4:	9732                	add	a4,a4,a2
+  c6:	00f317b3          	sll	a5,t1,a5
+  ca:	cb1c                	sw	a5,16(a4)
+	for (uint8_t i = 0; i < 8; i++)
+  cc:	fea693e3          	bne	a3,a0,b2 <clearLeds+0x12>
+	}
+}
+  d0:	8082                	ret
+
+000000d2 <handle_reset>:
+  d2:	20000197          	auipc	gp,0x20000
+  d6:	32a18193          	addi	gp,gp,810 # 200003fc <__global_pointer$>
+  da:	40418113          	addi	sp,gp,1028 # 20000800 <_eusrstack>
+  de:	6509                	lui	a0,0x2
+  e0:	88050513          	addi	a0,a0,-1920 # 1880 <ch32fun.c.9e423f21+0xa09>
+  e4:	30051073          	csrw	mstatus,a0
+  e8:	468d                	li	a3,3
+  ea:	00000517          	auipc	a0,0x0
+  ee:	f1650513          	addi	a0,a0,-234 # 0 <InterruptVector>
+  f2:	8d55                	or	a0,a0,a3
+  f4:	30551073          	csrw	mtvec,a0
+  f8:	c1818513          	addi	a0,gp,-1000 # 20000014 <pos.0>
+  fc:	c2018593          	addi	a1,gp,-992 # 2000001c <_ebss>
+ 100:	4601                	li	a2,0
+ 102:	00b55663          	bge	a0,a1,10e <handle_reset+0x3c>
+ 106:	c110                	sw	a2,0(a0)
+ 108:	0511                	addi	a0,a0,4
+ 10a:	feb54ee3          	blt	a0,a1,106 <handle_reset+0x34>
+ 10e:	31800513          	li	a0,792
+ 112:	c0418593          	addi	a1,gp,-1020 # 20000000 <dir.1>
+ 116:	c1818613          	addi	a2,gp,-1000 # 20000014 <pos.0>
+ 11a:	00c58863          	beq	a1,a2,12a <handle_reset+0x58>
+ 11e:	4114                	lw	a3,0(a0)
+ 120:	c194                	sw	a3,0(a1)
+ 122:	0511                	addi	a0,a0,4
+ 124:	0591                	addi	a1,a1,4
+ 126:	fec59ae3          	bne	a1,a2,11a <handle_reset+0x48>
+ 12a:	e000f7b7          	lui	a5,0xe000f
+ 12e:	4715                	li	a4,5
+ 130:	c398                	sw	a4,0(a5)
+ 132:	19600793          	li	a5,406
+ 136:	34179073          	csrw	mepc,a5
+ 13a:	30200073          	mret
+
+0000013e <ADC1_2_IRQHandler>:
+ 13e:	a001                	j	13e <ADC1_2_IRQHandler>
+
+00000140 <NMI_Handler>:
+ 140:	40021737          	lui	a4,0x40021
+ 144:	471c                	lw	a5,8(a4)
+ 146:	008006b7          	lui	a3,0x800
+ 14a:	8fd5                	or	a5,a5,a3
+ 14c:	c71c                	sw	a5,8(a4)
+
+0000014e <SystemInit>:
+ 14e:	400227b7          	lui	a5,0x40022
+ 152:	4705                	li	a4,1
+ 154:	c398                	sw	a4,0(a5)
+ 156:	400217b7          	lui	a5,0x40021
+ 15a:	01080737          	lui	a4,0x1080
+ 15e:	0007a223          	sw	zero,4(a5) # 40021004 <_eusrstack+0x20020804>
+ 162:	08170713          	addi	a4,a4,129 # 1080081 <main.c.b42e4e43+0x107e380>
+ 166:	c398                	sw	a4,0(a5)
+ 168:	009f0737          	lui	a4,0x9f0
+ 16c:	c798                	sw	a4,8(a5)
+ 16e:	40021737          	lui	a4,0x40021
+ 172:	431c                	lw	a5,0(a4)
+ 174:	00679693          	slli	a3,a5,0x6
+ 178:	fe06dde3          	bgez	a3,172 <SystemInit+0x24>
+ 17c:	435c                	lw	a5,4(a4)
+ 17e:	400216b7          	lui	a3,0x40021
+ 182:	9bf1                	andi	a5,a5,-4
+ 184:	0027e793          	ori	a5,a5,2
+ 188:	c35c                	sw	a5,4(a4)
+ 18a:	4721                	li	a4,8
+ 18c:	42dc                	lw	a5,4(a3)
+ 18e:	8bb1                	andi	a5,a5,12
+ 190:	fee79ee3          	bne	a5,a4,18c <SystemInit+0x3e>
+ 194:	8082                	ret
+
+00000196 <main>:
+	funDigitalWrite(ledStrip[pos], FUN_LOW);
+}
+
+
+int main(void)
+{
+ 196:	1151                	addi	sp,sp,-12
+ 198:	c222                	sw	s0,4(sp)
+ 19a:	c406                	sw	ra,8(sp)
+ 19c:	c026                	sw	s1,0(sp)
+	SystemInit();
+ 19e:	3f45                	jal	14e <SystemInit>
+	funGpioInitAll();
+ 1a0:	40021737          	lui	a4,0x40021
+ 1a4:	4f1c                	lw	a5,24(a4)
+	//SysTick_Init();
+
+	funPinMode(switches[0], GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+ 1a6:	76c5                	lui	a3,0xffff1
+ 1a8:	16fd                	addi	a3,a3,-1 # ffff0fff <_eusrstack+0xdfff07ff>
+	funGpioInitAll();
+ 1aa:	0357e793          	ori	a5,a5,53
+ 1ae:	cf1c                	sw	a5,24(a4)
+	funPinMode(switches[0], GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+ 1b0:	40011737          	lui	a4,0x40011
+ 1b4:	431c                	lw	a5,0(a4)
+
+	//Initialise GPIO's for each strip LED as push-pull output
+	
+	for (uint8_t i = 0; i < 8; i++)
+	{
+		funPinMode(ledStrip[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 1b6:	40011637          	lui	a2,0x40011
+	funPinMode(switches[0], GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+ 1ba:	8ff5                	and	a5,a5,a3
+ 1bc:	6691                	lui	a3,0x4
+ 1be:	8fd5                	or	a5,a5,a3
+ 1c0:	c31c                	sw	a5,0(a4)
+	funPinMode(switches[1], GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+ 1c2:	431c                	lw	a5,0(a4)
+ 1c4:	fff106b7          	lui	a3,0xfff10
+ 1c8:	16fd                	addi	a3,a3,-1 # fff0ffff <_eusrstack+0xdff0f7ff>
+ 1ca:	8ff5                	and	a5,a5,a3
+ 1cc:	000406b7          	lui	a3,0x40
+ 1d0:	8fd5                	or	a5,a5,a3
+ 1d2:	c31c                	sw	a5,0(a4)
+ 1d4:	4681                	li	a3,0
+		funPinMode(ledStrip[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 1d6:	c1018413          	addi	s0,gp,-1008 # 2000000c <ledStrip>
+ 1da:	80060613          	addi	a2,a2,-2048 # 40010800 <_eusrstack+0x20010000>
+ 1de:	433d                	li	t1,15
+ 1e0:	4505                	li	a0,1
+	for (uint8_t i = 0; i < 8; i++)
+ 1e2:	45a1                	li	a1,8
+		funPinMode(ledStrip[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 1e4:	008687b3          	add	a5,a3,s0
+ 1e8:	0007c783          	lbu	a5,0(a5)
+	for (uint8_t i = 0; i < 8; i++)
+ 1ec:	0685                	addi	a3,a3,1 # 40001 <main.c.b42e4e43+0x3e300>
+		funPinMode(ledStrip[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 1ee:	0047d713          	srli	a4,a5,0x4
+ 1f2:	072a                	slli	a4,a4,0xa
+ 1f4:	9732                	add	a4,a4,a2
+ 1f6:	8bbd                	andi	a5,a5,15
+ 1f8:	00072383          	lw	t2,0(a4) # 40011000 <_eusrstack+0x20010800>
+ 1fc:	078a                	slli	a5,a5,0x2
+ 1fe:	00f312b3          	sll	t0,t1,a5
+ 202:	fff2c293          	not	t0,t0
+ 206:	0072f2b3          	and	t0,t0,t2
+ 20a:	00f517b3          	sll	a5,a0,a5
+ 20e:	00f2e7b3          	or	a5,t0,a5
+ 212:	c31c                	sw	a5,0(a4)
+	for (uint8_t i = 0; i < 8; i++)
+ 214:	fcb698e3          	bne	a3,a1,1e4 <main+0x4e>
+	
+	// Initialise GPIO's for life LEDs as push-pull outputs
+
+	for (uint8_t i = 0; i < 3; i++)
+	{
+		funPinMode(lifeLeds[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 218:	400115b7          	lui	a1,0x40011
+ 21c:	4601                	li	a2,0
+ 21e:	c0c18513          	addi	a0,gp,-1012 # 20000008 <lifeLeds>
+ 222:	400114b7          	lui	s1,0x40011
+ 226:	80058593          	addi	a1,a1,-2048 # 40010800 <_eusrstack+0x20010000>
+ 22a:	43bd                	li	t2,15
+ 22c:	4305                	li	t1,1
+	for (uint8_t i = 0; i < 3; i++)
+ 22e:	428d                	li	t0,3
+		funPinMode(lifeLeds[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 230:	00a607b3          	add	a5,a2,a0
+ 234:	0007c783          	lbu	a5,0(a5)
+	for (uint8_t i = 0; i < 3; i++)
+ 238:	0605                	addi	a2,a2,1
+		funPinMode(lifeLeds[i], GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+ 23a:	0047d693          	srli	a3,a5,0x4
+ 23e:	06aa                	slli	a3,a3,0xa
+ 240:	96ae                	add	a3,a3,a1
+ 242:	8bbd                	andi	a5,a5,15
+ 244:	0006a083          	lw	ra,0(a3)
+ 248:	078a                	slli	a5,a5,0x2
+ 24a:	00f39733          	sll	a4,t2,a5
+ 24e:	fff74713          	not	a4,a4
+ 252:	00177733          	and	a4,a4,ra
+ 256:	00f317b3          	sll	a5,t1,a5
+ 25a:	8fd9                	or	a5,a5,a4
+ 25c:	c29c                	sw	a5,0(a3)
+	for (uint8_t i = 0; i < 3; i++)
+ 25e:	fc5619e3          	bne	a2,t0,230 <main+0x9a>
+	}
+
+	clearLeds();
+ 262:	3d3d                	jal	a0 <clearLeds>
+
+	for (uint8_t i = 0; i < 3; i++)
+	{
+		funDigitalWrite(lifeLeds[i], FUN_HIGH);
+ 264:	4305                	li	t1,1
+ 266:	0064a823          	sw	t1,16(s1) # 40011010 <_eusrstack+0x20010810>
+ 26a:	4789                	li	a5,2
+ 26c:	c89c                	sw	a5,16(s1)
+ 26e:	4791                	li	a5,4
+ 270:	c89c                	sw	a5,16(s1)
+	return SysTick->CNT;
+ 272:	e000f7b7          	lui	a5,0xe000f
+ 276:	479c                	lw	a5,8(a5)
+	}
+	
+	
+	last = millis();
+ 278:	c0f1ae23          	sw	a5,-996(gp) # 20000018 <last>
+	uint32_t interval = Ticks_from_Ms(500);
+
+	while(1)
+	{			
+		sw1_state = funDigitalRead(switches[0]);
+ 27c:	400116b7          	lui	a3,0x40011
+ 280:	469c                	lw	a5,8(a3)
+		sw2_state = funDigitalRead(switches[1]);
+ 282:	4690                	lw	a2,8(a3)
+
+		funDigitalWrite(lifeLeds[0], sw1_state);
+ 284:	4585                	li	a1,1
+		sw1_state = funDigitalRead(switches[0]);
+ 286:	838d                	srli	a5,a5,0x3
+		funDigitalWrite(lifeLeds[0], sw1_state);
+ 288:	fff7c793          	not	a5,a5
+ 28c:	8b85                	andi	a5,a5,1
+ 28e:	0792                	slli	a5,a5,0x4
+ 290:	00f597b3          	sll	a5,a1,a5
+ 294:	ca9c                	sw	a5,16(a3)
+		funDigitalWrite(lifeLeds[2], sw2_state);
+ 296:	fff64793          	not	a5,a2
+ 29a:	8bc1                	andi	a5,a5,16
+ 29c:	0789                	addi	a5,a5,2 # e000f002 <_eusrstack+0xc000e802>
+ 29e:	00f595b3          	sll	a1,a1,a5
+ 2a2:	ca8c                	sw	a1,16(a3)
+	return SysTick->CNT;
+ 2a4:	e000f7b7          	lui	a5,0xe000f
+ 2a8:	4788                	lw	a0,8(a5)
+	if ((millis() - last) >= interval)
+ 2aa:	c1c1a683          	lw	a3,-996(gp) # 20000018 <last>
+ 2ae:	016e35b7          	lui	a1,0x16e3
+ 2b2:	8d15                	sub	a0,a0,a3
+ 2b4:	5ff58593          	addi	a1,a1,1535 # 16e35ff <main.c.b42e4e43+0x16e18fe>
+		if (dir)
+ 2b8:	c041c303          	lbu	t1,-1020(gp) # 20000000 <dir.1>
+			pos++;
+ 2bc:	c181c783          	lbu	a5,-1000(gp) # 20000014 <pos.0>
+	if ((millis() - last) >= interval)
+ 2c0:	02a5f663          	bgeu	a1,a0,2ec <main+0x156>
+		last += interval;
+ 2c4:	016e35b7          	lui	a1,0x16e3
+ 2c8:	60058593          	addi	a1,a1,1536 # 16e3600 <main.c.b42e4e43+0x16e18ff>
+ 2cc:	96ae                	add	a3,a3,a1
+ 2ce:	c0d1ae23          	sw	a3,-996(gp) # 20000018 <last>
+		if (dir)
+ 2d2:	04030163          	beqz	t1,314 <main+0x17e>
+			pos++;
+ 2d6:	0785                	addi	a5,a5,1 # e000f001 <_eusrstack+0xc000e801>
+			pos--;
+ 2d8:	0ff7f793          	zext.b	a5,a5
+ 2dc:	c0f18c23          	sb	a5,-1000(gp) # 20000014 <pos.0>
+		if (pos > 7)
+ 2e0:	469d                	li	a3,7
+ 2e2:	00f6f563          	bgeu	a3,a5,2ec <main+0x156>
+			clearLeds();
+ 2e6:	3b6d                	jal	a0 <clearLeds>
+			dir = 0;
+ 2e8:	c0018223          	sb	zero,-1020(gp) # 20000000 <dir.1>
+	funDigitalWrite(ledStrip[pos], FUN_LOW);
+ 2ec:	c181c783          	lbu	a5,-1000(gp) # 20000014 <pos.0>
+ 2f0:	40011637          	lui	a2,0x40011
+ 2f4:	80060613          	addi	a2,a2,-2048 # 40010800 <_eusrstack+0x20010000>
+ 2f8:	97a2                	add	a5,a5,s0
+ 2fa:	0007c783          	lbu	a5,0(a5)
+ 2fe:	0047d693          	srli	a3,a5,0x4
+ 302:	06aa                	slli	a3,a3,0xa
+ 304:	8bbd                	andi	a5,a5,15
+ 306:	96b2                	add	a3,a3,a2
+ 308:	07c1                	addi	a5,a5,16
+ 30a:	4605                	li	a2,1
+ 30c:	00f617b3          	sll	a5,a2,a5
+ 310:	ca9c                	sw	a5,16(a3)
+}
+ 312:	b7ad                	j	27c <main+0xe6>
+			pos--;
+ 314:	17fd                	addi	a5,a5,-1
+ 316:	b7c9                	j	2d8 <main+0x142>
