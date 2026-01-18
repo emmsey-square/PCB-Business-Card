@@ -5,39 +5,17 @@
 //uint8_t lifeLeds[3] = {PD4, PA1, PA2};
 //uint8_t switches[2] = {PA1, PA2};
 
-#define LEFT 0
-#define RIGHT 1
 
 uint8_t ledStrip[8] = {PC5, PC6, PD2, PD3, PD4, PD5, PD6, PC7};
 uint8_t lifeLeds[3] = {PC0, PC1, PC2};
-uint8_t switches[2] = {PC3, PC4};
-
+#define SW1 PC3
+#define SW2 PC4
 uint8_t lives = 3;
 uint16_t speed = 500;
-uint8_t pos = 0;
 
-uint32_t last;
-/*
-void SysTick_Init(void)
-{
-	SysTick->CTLR = 0x0000;
-	SysTick->CMP = DELAY_MS_TIME - 1;
-	SysTick->CNT - 0x00000000;
-	millis = 0x00000000;
-	SysTick->CTLR |= (SYSTICK_CTLR_STE | SYSTICK_CTLR_STIE | SYSTICK_CTLR_STCLK);
-	NVIC_EnableIRQ(SysTick_IRQn);
-}
+uint32_t prevLedTime, prevSwitchTime;
 
-void SysTick_Handler(void) __attribute__((interrupt));
-void SysTick_Handler(void)
-{
-	SysTick->CMP += DELAY_MS_TIME;
-	SysTick->SR = 0x00000000;
-	millis++;
-}
-*/
-
-static inline uint32_t millis(void)
+inline uint32_t millis(void)
 {
 	return SysTick->CNT;
 }
@@ -50,156 +28,45 @@ void clearLeds(void)
 	}
 }
 
-/*
-void move(void)
-{
-	clearLeds();
-		
-	for (uint8_t i = 0; i < 8; i++)
-	{	
-		if (i == 0) 
-		{
-			funDigitalWrite(ledStrip[i], FUN_LOW);
-		}
-		else 
-		{
-			funDigitalWrite(ledStrip[i], FUN_LOW);
-			funDigitalWrite(ledStrip[i-1], FUN_HIGH);
-		}
-		Delay_Ms(speed);
-	}
 
-	clearLeds();
-
-	for (uint8_t i = 7; i > 0; i--)
-	{
-		if (i == 8 || i == 0) 
-		{
-			funDigitalWrite(ledStrip[i], FUN_LOW);
-		}
-		else
-		{
-			funDigitalWrite(ledStrip[i], FUN_LOW);
-			funDigitalWrite(ledStrip[i+1], FUN_HIGH);
-		}
-		//Delay_Ms(speed);
-	}
-
-	clearLeds();
-
-	if (speed > 0)
-		speed -= 50;
-	else 
-		speed = 500;
-}
-*/
-
-void move(uint16_t interval)
-{
-	
-	clearLeds();
-
-	for (uint8_t i = 0; i < 8; i++)
-	{
-		if ((millis() - last) >= interval)
-		{
-
-			last += interval;
-
-			if (i == 0) 
-			{
-				funDigitalWrite(ledStrip[i], FUN_LOW);
-			}
-			else 
-			{
-				funDigitalWrite(ledStrip[i], FUN_LOW);
-				funDigitalWrite(ledStrip[i-1], FUN_HIGH);
-			}
-		}
-	}
-
-	clearLeds();
-
-	for (uint8_t i = 7; i > 0; i--)
-	{
-		if ((millis() - last) >= interval)
-		{
-			last += interval;
-
-			if (i == 0) 
-			{
-				funDigitalWrite(ledStrip[i], FUN_LOW);
-			}
-			else 
-			{
-				funDigitalWrite(ledStrip[i], FUN_LOW);
-				funDigitalWrite(ledStrip[i+1], FUN_HIGH);
-			}
-		}
-	}
-	clearLeds();
-	
-	if (interval > 0)
-		interval -= 50;
-	else 
-		interval = 500;
-}
-
-void leds(uint32_t interval)
+uint32_t moveLeds(uint32_t* interval)
 {
 	static uint8_t pos = 0, dir  = 1;
-	/*
-	for (uint8_t i = 0; i < 8; i++)
-	{
-		if ((millis() - last) >= interval)
-		{
-			last += interval;
-			funDigitalWrite(ledStrip[i], FUN_LOW);
-		}
 
-		if (i == 7)
-			clearLeds();
-	}
-	*/
-	/*
-	for (uint8_t i = 0; i < 8; i++)
+	if ((millis() - prevLedTime) >= *interval)
 	{
-		if ((millis() - last) >= interval)
-		{
-			last += interval;
-			funDigitalWrite(ledStrip[i], FUN_LOW);
-		}
-		else
-		{
-			funDigitalWrite(ledStrip[i], FUN_HIGH);
-		}
-	}
-	*/
-
-	if ((millis() - last) >= interval)
-	{
-		last += interval;
+		prevLedTime += *interval;
+		
+		clearLeds();
 
 		if (dir)
 			pos++;
 		else 
 			pos--;
 
-		if (pos > 7)
-		{
-			clearLeds();
+
+		if (pos >= 7)
 			dir = 0;
-		}
-		else if (pos < 0)
-		{
-			clearLeds();
+		else if (pos <= 0)
 			dir = 1;
-		}
 	}
 	
 	funDigitalWrite(ledStrip[pos], FUN_LOW);
+	
+	return pos;
 }
+/*
+bool debounceSwitch(uint8_t sw)
+{
+	if ((millis() - prevSwitchTime) >= DEBOUNCE)
+	{
+		prevSwitchTime += DEBOUNCE;
 
+		return funDigitalRead(switches[sw]);
+	}
+	return true;
+}
+*/
 
 int main(void)
 {
@@ -207,10 +74,14 @@ int main(void)
 	funGpioInitAll();
 	//SysTick_Init();
 
-	funPinMode(switches[0], GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
-	funPinMode(switches[1], GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+	funPinMode(SW1, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
+	funPinMode(SW2, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
 	
 	uint8_t sw1_state, sw2_state;
+	uint32_t interval = Ticks_from_Ms(500);	// interval = n * 6000000
+	uint32_t pos;
+
+	prevLedTime = millis();
 
 	//Initialise GPIO's for each strip LED as push-pull output
 	
@@ -233,19 +104,30 @@ int main(void)
 		funDigitalWrite(lifeLeds[i], FUN_HIGH);
 	}
 	
-	
-	last = millis();
-	uint32_t interval = Ticks_from_Ms(500);
 
-	while(1)
+	for (;;)
 	{			
-		sw1_state = funDigitalRead(switches[0]);
-		sw2_state = funDigitalRead(switches[1]);
+		sw1_state = funDigitalRead(SW1);
+		sw2_state = funDigitalRead(SW2);
 
 		funDigitalWrite(lifeLeds[0], sw1_state);
 		funDigitalWrite(lifeLeds[2], sw2_state);
 		
-		leds(interval);
+		pos = moveLeds(&interval);
+
+		if ( (!sw1_state && (pos == 0)) || (!sw2_state && (pos == 7)) )
+		{
+			Delay_Ms(25);
+			interval -= Ticks_from_Ms(10);
+		}
+		/*
+		if ( (!sw1_state && (pos == 0) || (!sw2_state && (pos == 7)) )
+			lives--;
+		
+		for (uint8_t i = 0; i < lives; i++)
+			funDigitalWrite(lifeLeds[i]
+		*/
+		//leds(&interval);
 		//clearLeds();
 		//move(interval);
 	}		
