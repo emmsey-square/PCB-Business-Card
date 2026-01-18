@@ -1,1 +1,7 @@
 ch32fun/
+*.bin
+*.elf
+*.hex
+*.lst
+*.map
+
