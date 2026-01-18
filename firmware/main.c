@@ -1,24 +1,24 @@
 #include "ch32fun.h"
 #include "funconfig.h"
 
-//uint8_t ledStrip[8] = {PC0, PC1, PC2, PC3, PC4, PC5, PC6, PC7};
-//uint8_t lifeLeds[3] = {PD4, PA1, PA2};
-//uint8_t switches[2] = {PA1, PA2};
 
+#define SW1 PC3
+#define SW2 PC4
 
 uint8_t ledStrip[8] = {PC5, PC6, PD2, PD3, PD4, PD5, PD6, PC7};
 uint8_t lifeLeds[3] = {PC0, PC1, PC2};
-#define SW1 PC3
-#define SW2 PC4
+
 uint8_t lives = 3;
-uint16_t speed = 500;
+uint32_t interval;
 
 uint32_t prevLedTime, prevSwitchTime;
+uint8_t sw1_state, sw2_state;
 
 inline uint32_t millis(void)
 {
 	return SysTick->CNT;
 }
+
 
 void clearLeds(void)
 {
@@ -55,30 +55,39 @@ uint32_t moveLeds(uint32_t* interval)
 	
 	return pos;
 }
-/*
-bool debounceSwitch(uint8_t sw)
-{
-	if ((millis() - prevSwitchTime) >= DEBOUNCE)
-	{
-		prevSwitchTime += DEBOUNCE;
 
-		return funDigitalRead(switches[sw]);
+void showLives(void)
+{
+	for (uint8_t i = 0; i < 3; i++)
+		funDigitalWrite(lifeLeds[i], FUN_HIGH);
+
+	if (lives == 0)
+	{
+		for (uint8_t i = 0; i < 3; i++)
+			funDigitalWrite(lifeLeds[i], FUN_HIGH);
 	}
-	return true;
+	else 
+	{
+		for (uint8_t i = 0; i < lives; i++)
+			funDigitalWrite(lifeLeds[i], FUN_LOW);
+	}
 }
-*/
+
+void gameOver(void)
+{
+	interval = Ticks_from_Ms(500);
+//	lives = 0;
+}
 
 int main(void)
 {
 	SystemInit();
 	funGpioInitAll();
-	//SysTick_Init();
 
 	funPinMode(SW1, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
 	funPinMode(SW2, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
 	
-	uint8_t sw1_state, sw2_state;
-	uint32_t interval = Ticks_from_Ms(500);	// interval = n * 6000000
+	interval = Ticks_from_Ms(500);	// interval = n * 6000000
 	uint32_t pos;
 
 	prevLedTime = millis();
@@ -99,19 +108,13 @@ int main(void)
 
 	clearLeds();
 
-	for (uint8_t i = 0; i < 3; i++)
-	{
-		funDigitalWrite(lifeLeds[i], FUN_HIGH);
-	}
-	
-
 	for (;;)
 	{			
 		sw1_state = funDigitalRead(SW1);
 		sw2_state = funDigitalRead(SW2);
 
-		funDigitalWrite(lifeLeds[0], sw1_state);
-		funDigitalWrite(lifeLeds[2], sw2_state);
+//		funDigitalWrite(lifeLeds[0], sw1_state);
+//		funDigitalWrite(lifeLeds[2], sw2_state);
 		
 		pos = moveLeds(&interval);
 
@@ -120,16 +123,14 @@ int main(void)
 			Delay_Ms(25);
 			interval -= Ticks_from_Ms(10);
 		}
-		/*
-		if ( (!sw1_state && (pos == 0) || (!sw2_state && (pos == 7)) )
+	
+		if ( (sw1_state && (pos == 0)) || (sw2_state && (pos == 7)) ) 
+		{
+			Delay_Ms(10);
 			lives--;
-		
-		for (uint8_t i = 0; i < lives; i++)
-			funDigitalWrite(lifeLeds[i]
-		*/
-		//leds(&interval);
-		//clearLeds();
-		//move(interval);
+		}		
+
+		showLives();
 	}		
 
 	return 0;
