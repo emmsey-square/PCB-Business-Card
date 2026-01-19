@@ -8,7 +8,7 @@
 uint8_t ledStrip[8] = {PC5, PC6, PD2, PD3, PD4, PD5, PD6, PC7};
 uint8_t lifeLeds[3] = {PC0, PC1, PC2};
 
-uint8_t lives = 3;
+uint8_t lives = 4;
 uint32_t interval;
 uint32_t pos = 0;
 uint32_t prevLedTime, prevSwitchTime;
