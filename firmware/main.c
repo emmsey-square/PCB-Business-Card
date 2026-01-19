@@ -10,9 +10,10 @@ uint8_t lifeLeds[3] = {PC0, PC1, PC2};
 
 uint8_t lives = 3;
 uint32_t interval;
-uint32_t pos;
+uint32_t pos = 0;
 uint32_t prevLedTime, prevSwitchTime;
 uint8_t sw1_state, sw2_state;
+uint8_t started = 0;
 
 inline uint32_t millis(void)
 {
@@ -31,7 +32,7 @@ void clearLeds(void)
 
 uint32_t moveLeds(uint32_t* interval)
 {
-	static uint8_t pos = 0, dir  = 1;
+	static uint32_t pos = 0, dir  = 1;
 
 	if ((millis() - prevLedTime) >= *interval)
 	{
@@ -52,7 +53,7 @@ uint32_t moveLeds(uint32_t* interval)
 	}
 	
 	funDigitalWrite(ledStrip[pos], FUN_LOW);
-	
+
 	return pos;
 }
 
@@ -61,7 +62,7 @@ void showLives(void)
 	for (uint8_t i = 0; i < 3; i++)
 		funDigitalWrite(lifeLeds[i], FUN_HIGH);
 
-	if (lives == 0)
+	if (lives <= 0)
 	{
 		for (uint8_t i = 0; i < 3; i++)
 			funDigitalWrite(lifeLeds[i], FUN_HIGH);
@@ -73,11 +74,6 @@ void showLives(void)
 	}
 }
 
-void gameOver(void)
-{
-	interval = Ticks_from_Ms(500);
-//	lives = 0;
-}
 
 int main(void)
 {
@@ -118,30 +114,53 @@ int main(void)
 		pos = moveLeds(&interval);
 		
 		// Check if buttons are pressed when pos hits equals either end
+		
+		if ((millis() > 2000000000) && (started == 0))
+			started = 1;
 
 		if ( (!sw1_state && (pos == 0)) || (!sw2_state && (pos == 7)) )
 		{
 			Delay_Ms(25);
 			interval -= Ticks_from_Ms(10);
 		}
-		else if ( (sw1_state && (pos == 0)) || (sw2_state && (pos == 7)) )
+		
+		if ((pos == 0) && (sw1_state == 1))
 		{
-			lives = 0;
-//			Delay_Ms(5);
-		//	showLives();
+			Delay_Ms(500);
+			lives--;
 		}
 
-		showLives();
-/*		
-
-		if ( (sw1_state && (pos == 0)) || (sw2_state && (pos == 7)) ) 
+		if ((pos == 7) && (sw2_state == 1))
 		{
-			Delay_Ms(10);
+			Delay_Ms(500);
 			lives--;
-		}		
-*/
-//		showLives();
-	}		
+		}
+
+		for (uint8_t i = 0; i < 3; i++)
+			funDigitalWrite(lifeLeds[i], FUN_HIGH);
+		
+		switch (lives)
+		{
+			case 0:
+				for (uint8_t i = 0; i < 3; i++)
+					funDigitalWrite(lifeLeds[i], FUN_HIGH);
+				break;
+			case 1:
+				funDigitalWrite(lifeLeds[0], FUN_LOW);
+				break;
+			case 2:
+				for (uint8_t i = 0; i < 2; i++)
+					funDigitalWrite(lifeLeds[i], FUN_LOW);
+				break;
+			case 3:
+				for (uint8_t i = 0; i < 3; i++)
+					funDigitalWrite(lifeLeds[i], FUN_LOW);
+				break;
+			default:
+				lives = 3;
+				break;
+		}
+	}
 
 	return 0;
 }
