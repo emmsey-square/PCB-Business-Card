@@ -33,25 +33,31 @@ void clearLeds(void)
 uint32_t moveLeds(uint32_t* interval)
 {
 	static uint32_t pos = 0, dir  = 1;
-
-	if ((millis() - prevLedTime) >= *interval)
+	if (lives > 0)
 	{
-		prevLedTime += *interval;
-		
-		clearLeds();
+		if ((millis() - prevLedTime) >= *interval)
+		{
+			prevLedTime += *interval;
+			
+			clearLeds();
 
-		if (dir)
-			pos++;
-		else 
-			pos--;
+			if (dir)
+				pos++;
+			else 
+				pos--;
 
 
-		if (pos >= 7)
-			dir = 0;
-		else if (pos <= 0)
-			dir = 1;
+			if (pos >= 7)
+				dir = 0;
+			else if (pos <= 0)
+				dir = 1;
+		}
 	}
-	
+	else 
+	{
+		clearLeds();
+	}
+
 	funDigitalWrite(ledStrip[pos], FUN_LOW);
 
 	return pos;
@@ -61,29 +67,43 @@ void showLives(void)
 {
 	for (uint8_t i = 0; i < 3; i++)
 		funDigitalWrite(lifeLeds[i], FUN_HIGH);
-
-	if (lives <= 0)
+	
+	switch (lives)
 	{
-		for (uint8_t i = 0; i < 3; i++)
-			funDigitalWrite(lifeLeds[i], FUN_HIGH);
-	}
-	else 
-	{
-		for (uint8_t i = 0; i < lives; i++)
-			funDigitalWrite(lifeLeds[i], FUN_LOW);
+		case 0:
+			for (uint8_t i = 0; i < 3; i++)
+				funDigitalWrite(lifeLeds[i], FUN_HIGH);
+			break;
+		case 1:
+			funDigitalWrite(lifeLeds[0], FUN_LOW);
+			break;
+		case 2:
+			for (uint8_t i = 0; i < 2; i++)
+				funDigitalWrite(lifeLeds[i], FUN_LOW);
+			break;
+		case 3:
+			for (uint8_t i = 0; i < 3; i++)
+				funDigitalWrite(lifeLeds[i], FUN_LOW);
+			break;
+		default:
+			lives = 3;
+			break;
 	}
 }
+
 
 
 int main(void)
 {
 	SystemInit();
 	funGpioInitAll();
+	
+	// Configure switch inputs
 
 	funPinMode(SW1, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
 	funPinMode(SW2, GPIO_Speed_In | GPIO_CNF_IN_FLOATING);
 	
-	interval = Ticks_from_Ms(500);	// interval = n * 6000000
+	interval = Ticks_from_Ms(500);	
 
 	prevLedTime = millis();
 
@@ -108,58 +128,25 @@ int main(void)
 		sw1_state = funDigitalRead(SW1);
 		sw2_state = funDigitalRead(SW2);
 
-		//funDigitalWrite(lifeLeds[0], sw1_state);
-		//funDigitalWrite(lifeLeds[2], sw2_state);
-		
 		pos = moveLeds(&interval);
 		
 		// Check if buttons are pressed when pos hits equals either end
 		
-		if ((millis() > 2000000000) && (started == 0))
-			started = 1;
-
 		if ( (!sw1_state && (pos == 0)) || (!sw2_state && (pos == 7)) )
 		{
 			Delay_Ms(25);
 			interval -= Ticks_from_Ms(10);
 		}
-		
-		if ((pos == 0) && (sw1_state == 1))
+
+		// Check if led at either end and respective buttons are pushed
+
+		if ( ((pos == 0) && (sw1_state == 1)) || ((pos == 7) && (sw2_state == 1)) )
 		{
 			Delay_Ms(500);
 			lives--;
 		}
-
-		if ((pos == 7) && (sw2_state == 1))
-		{
-			Delay_Ms(500);
-			lives--;
-		}
-
-		for (uint8_t i = 0; i < 3; i++)
-			funDigitalWrite(lifeLeds[i], FUN_HIGH);
 		
-		switch (lives)
-		{
-			case 0:
-				for (uint8_t i = 0; i < 3; i++)
-					funDigitalWrite(lifeLeds[i], FUN_HIGH);
-				break;
-			case 1:
-				funDigitalWrite(lifeLeds[0], FUN_LOW);
-				break;
-			case 2:
-				for (uint8_t i = 0; i < 2; i++)
-					funDigitalWrite(lifeLeds[i], FUN_LOW);
-				break;
-			case 3:
-				for (uint8_t i = 0; i < 3; i++)
-					funDigitalWrite(lifeLeds[i], FUN_LOW);
-				break;
-			default:
-				lives = 3;
-				break;
-		}
+		showLives();
 	}
 
 	return 0;
